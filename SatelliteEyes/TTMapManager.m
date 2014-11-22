@@ -12,12 +12,11 @@
 #import "NSFileManager+StandardPaths.h"
 #import "Reachability.h"
 
-@interface TTMapManager (Private)
-
+@interface TTMapManager ()
 - (CGRect)tileRectForScreen:(NSScreen *)screen 
                  coordinate:(CLLocationCoordinate2D)coordinate 
                   zoomLevel:(unsigned short)zoomLevel;
-
+@property (nonatomic, strong) CLLocation *lastSeenLocation;
 @end
 
 #define BASE_TILE_SIZE 256
@@ -110,21 +109,21 @@
 }
 
 - (void)updateMap {
-    if (lastSeenLocation) {
-        [self updateMapToCoordinate:lastSeenLocation.coordinate force:NO];
+    if (self.lastSeenLocation) {
+        [self updateMapToCoordinate:self.lastSeenLocation.coordinate force:NO];
     }
 }
 
 - (void)forceUpdateMap {
-    if (lastSeenLocation) {
-        [self updateMapToCoordinate:lastSeenLocation.coordinate force:YES];
+    if (self.lastSeenLocation) {
+        [self updateMapToCoordinate:self.lastSeenLocation.coordinate force:YES];
     }
 }
 
 // Lose the location and force fetching a new one
 - (void)restartMap {
     [locationManager stopUpdatingLocation];
-    lastSeenLocation = nil;
+    self.lastSeenLocation = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerLocationLost object:nil];
     [locationManager startUpdatingLocation];    
 }
@@ -132,6 +131,25 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     [self updateMap];
+}
+
+- (TTMapImage *)mapImageForCoordinate:(CLLocationCoordinate2D)coordinate
+                               screen:(NSScreen *)screen
+                          imageEffect:(NSDictionary *)imageEffect
+{
+    CGRect tileRect = [self tileRectForScreen:screen
+                                   coordinate:coordinate
+                                    zoomLevel:self.zoomLevel];
+    
+    NSString *source = [self sourceForScreen:screen];
+    float tileScale = [self tileScaleForScren:screen];
+    
+    return [[TTMapImage alloc] initWithTileRect:tileRect
+                               tileScale:tileScale
+                               zoomLevel:self.zoomLevel
+                                  source:source
+                                  effect:imageEffect
+                                    logo:self.logoImage];
 }
 
 - (void)updateMapToCoordinate:(CLLocationCoordinate2D)coordinate force:(BOOL)force
@@ -143,20 +161,7 @@
             
             [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerStartedLoad object:nil];
             
-            CGRect tileRect = [self tileRectForScreen:screen 
-                                           coordinate:coordinate 
-                                            zoomLevel:self.zoomLevel];
-
-            NSString *source = [self sourceForScreen:screen];
-            float tileScale = [self tileScaleForScren:screen];
-            
-            TTMapImage *mapImage = 
-            [[TTMapImage alloc] initWithTileRect:tileRect
-                                       tileScale:tileScale
-                                       zoomLevel:self.zoomLevel
-                                          source:source
-                                          effect:self.selectedImageEffect
-                                            logo:self.logoImage];
+            TTMapImage *mapImage = [self mapImageForCoordinate:coordinate screen:screen imageEffect:[self selectedImageEffect]];
             
             [mapImage fetchTilesWithSuccess:^(NSURL *filePath) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerFinishedLoad object:nil];
@@ -206,7 +211,7 @@
     // throw away location updates older than two minutes
 	if (newLocation && abs([newLocation.timestamp timeIntervalSinceNow]) < 120) {
         [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerLocationUpdated object:newLocation];
-        lastSeenLocation = newLocation;
+        self.lastSeenLocation = newLocation;
         [self updateMapToCoordinate:newLocation.coordinate force:NO];
     }
 }
@@ -399,7 +404,7 @@
 }
 
 - (NSURL *)browserURL {
-    if (!lastSeenLocation) {
+    if (!self.lastSeenLocation) {
         return nil;
     }
     
@@ -412,8 +417,8 @@
     [coordinateFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [coordinateFormatter setMaximumFractionDigits:8];
     
-    NSNumber *latitudeNumber = @(lastSeenLocation.coordinate.latitude);
-    NSNumber *longitudeNumber = @(lastSeenLocation.coordinate.longitude);
+    NSNumber *latitudeNumber = @(self.lastSeenLocation.coordinate.latitude);
+    NSNumber *longitudeNumber = @(self.lastSeenLocation.coordinate.longitude);
     
     NSString *latitudeString = [coordinateFormatter stringFromNumber:latitudeNumber];
     NSString *longitudeString = [coordinateFormatter stringFromNumber:longitudeNumber];

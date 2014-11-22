@@ -15,6 +15,10 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 
+@interface TTAppDelegate ()
+@property (nonatomic, strong) TTMapManager *mapManager;
+@end
+
 @implementation TTAppDelegate
 
 @synthesize preferencesWindowController, aboutWindowController;
@@ -32,11 +36,11 @@
     [[NSURLCache sharedURLCache] setDiskCapacity:100*1024^2];
     
     statusItemController = [[TTStatusItemController alloc] init];
-    mapManager = [[TTMapManager alloc] init];
+    self.mapManager = [[TTMapManager alloc] init];
     
     BOOL shouldCleanCache = [[NSUserDefaults standardUserDefaults] boolForKey:@"cleanCache"];
     if (shouldCleanCache) {
-        [mapManager cleanCache];
+        [self.mapManager cleanCache];
     }
     
     [[NSNotificationCenter defaultCenter] addObserverForName:TTMapManagerLocationPermissionDenied object:nil queue:nil usingBlock:^(NSNotification *note) {
@@ -44,7 +48,7 @@
     }];
     
     [self doFirstRun];
-    [mapManager start];
+    [self.mapManager start];
     
 }
 
@@ -67,7 +71,7 @@
 }
 
 - (void)forceMapUpdate:(id)sender {
-    [mapManager forceUpdateMap];
+    [self.mapManager forceUpdateMap];
 }
 
 - (void)checkForUpdates:(id)sender {
@@ -126,11 +130,11 @@
 }
 
 - (NSURL *)visibleMapBrowserURL {
-    return [mapManager browserURL];
+    return [self.mapManager browserURL];
 }
 
 - (void)openMapInBrowser:(id)sender {
-    NSURL *browserURL = [mapManager browserURL];
+    NSURL *browserURL = [self.mapManager browserURL];
     if (browserURL) {
         [[NSWorkspace sharedWorkspace] openURL:browserURL];
     }

@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import "TTMapImage.h"
 
 @class Reachability;
+@class TTMapImage;
 
 static NSString *const TTMapManagerStartedLoad = @"TTMapManagerStartedLoad";
 static NSString *const TTMapManagerFailedLoad = @"TTMapManagerFailedLoad";
@@ -21,10 +21,10 @@ static NSString *const TTMapManagerLocationPermissionDenied = @"TTMapManagerLoca
 
 @interface TTMapManager : NSObject <CLLocationManagerDelegate> {
     CLLocationManager *locationManager;
-    CLLocation *lastSeenLocation;
     dispatch_queue_t updateQueue;
     Reachability *reachability;
 }
+@property (nonatomic, strong, readonly) CLLocation *lastSeenLocation;
 
 - (void)start;
 - (void)updateMapToCoordinate:(CLLocationCoordinate2D)coordinate force:(BOOL)force;
@@ -32,5 +32,7 @@ static NSString *const TTMapManagerLocationPermissionDenied = @"TTMapManagerLoca
 - (void)forceUpdateMap;
 - (void)cleanCache;
 - (NSURL *)browserURL;
-
+- (TTMapImage *)mapImageForCoordinate:(CLLocationCoordinate2D)coordinate
+                               screen:(NSScreen *)screen
+                          imageEffect:(NSDictionary *)imageEffect;
 @end

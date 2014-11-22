@@ -13,7 +13,6 @@
 @class TTAboutWindowController;
 
 @interface TTAppDelegate : NSObject <NSApplicationDelegate> {
-    TTMapManager *mapManager;
     TTStatusItemController *statusItemController;
     TTPreferencesWindowController *preferencesWindowController;
     TTAboutWindowController *aboutWindowController;
@@ -21,6 +20,7 @@
 
 @property IBOutlet TTPreferencesWindowController *preferencesWindowController;
 @property IBOutlet TTAboutWindowController *aboutWindowController;
+@property (nonatomic, strong, readonly) TTMapManager *mapManager;
 
 - (void)menuActionExit:(id)sender;
 - (void)forceMapUpdate:(id)sender;

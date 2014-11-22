@@ -12,8 +12,8 @@
 @interface TTPreferencesViewController : NSViewController <NSTextFieldDelegate>
 
 @property (nonatomic) BOOL startAtLogin;
-@property (strong) TTManageMapStylesWindowController *manageMapStylesWindowController;
 
 - (IBAction)showManageMapStyles:(id)sender;
+- (IBAction)showImageEffects:(id)sender;
 
 @end

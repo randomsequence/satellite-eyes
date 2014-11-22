@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6254"/>
+        <plugIn identifier="com.apple.QuartzComposerIBPlugin" version="6254"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Image Effects" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="240" width="480" height="625"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1577"/>
+            <view key="contentView" id="EiT-Mj-1SZ">
+                <rect key="frame" x="0.0" y="0.0" width="480" height="625"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <popUpButton verticalHuggingPriority="750" horizontalCompressionResistancePriority="1" translatesAutoresizingMaskIntoConstraints="NO" id="nTc-Mc-QXX">
+                        <rect key="frame" x="112" y="581" width="351" height="26"/>
+                        <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="RdG-VR-SiH">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="menu"/>
+                            <menu key="menu" id="COh-jV-7e6"/>
+                        </popUpButtonCell>
+                        <connections>
+                            <binding destination="j6l-b4-lwV" name="content" keyPath="arrangedObjects" id="7yA-t3-Dum"/>
+                            <binding destination="j6l-b4-lwV" name="contentValues" keyPath="arrangedObjects.attributes.name" previousBinding="7yA-t3-Dum" id="1X0-C3-aTg"/>
+                            <binding destination="rT4-Cj-ElH" name="selectedObject" keyPath="composition" previousBinding="1X0-C3-aTg" id="ffr-MT-6Ya"/>
+                        </connections>
+                    </popUpButton>
+                    <textField horizontalHuggingPriority="751" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fnP-pT-Gu2">
+                        <rect key="frame" x="20" y="586" width="86" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Image Effect:" id="7RI-qr-QTh">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rIv-HV-n2v">
+                        <rect key="frame" x="18" y="288" width="444" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Settings" id="3Ng-Dk-YIq">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <qcCompositionParameterView translatesAutoresizingMaskIntoConstraints="NO" id="cIm-MZ-aM2">
+                        <rect key="frame" x="20" y="61" width="440" height="219"/>
+                        <connections>
+                            <outlet property="delegate" destination="rT4-Cj-ElH" id="OHx-b5-RZ8"/>
+                        </connections>
+                    </qcCompositionParameterView>
+                    <qcView autostartsRendering="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EQO-lW-LMP">
+                        <rect key="frame" x="20" y="313" width="440" height="251"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="EQO-lW-LMP" secondAttribute="height" multiplier="440:251" id="d04-4V-Gy7"/>
+                        </constraints>
+                        <color key="eraseColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    </qcView>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="QCA-3A-USv">
+                        <rect key="frame" x="8" y="13" width="83" height="32"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tDl-cG-X0s">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wPX-OZ-Cwo">
+                        <rect key="frame" x="393" y="10" width="73" height="32"/>
+                        <buttonCell key="cell" type="push" title="Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Tbh-QS-Miy">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="cIm-MZ-aM2" secondAttribute="trailing" constant="20" id="84B-Cp-8Zi"/>
+                    <constraint firstAttribute="trailing" secondItem="wPX-OZ-Cwo" secondAttribute="trailing" constant="20" id="Cqw-F1-Kvq"/>
+                    <constraint firstItem="QCA-3A-USv" firstAttribute="top" secondItem="cIm-MZ-aM2" secondAttribute="bottom" constant="20" id="FI8-Ho-vWg"/>
+                    <constraint firstItem="fnP-pT-Gu2" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="22" id="Hlb-Q7-1Y4"/>
+                    <constraint firstAttribute="trailing" secondItem="EQO-lW-LMP" secondAttribute="trailing" constant="20" id="HoQ-bk-Mq5"/>
+                    <constraint firstItem="fnP-pT-Gu2" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="22" id="KhX-Fh-XGy"/>
+                    <constraint firstItem="QCA-3A-USv" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="14" id="Lbc-4F-vVV"/>
+                    <constraint firstItem="cIm-MZ-aM2" firstAttribute="top" secondItem="rIv-HV-n2v" secondAttribute="bottom" constant="8" id="QnG-w5-4Ur"/>
+                    <constraint firstItem="nTc-Mc-QXX" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="Qwo-Wc-ut8"/>
+                    <constraint firstAttribute="trailing" secondItem="nTc-Mc-QXX" secondAttribute="trailing" constant="20" id="Utc-MU-WiK"/>
+                    <constraint firstItem="cIm-MZ-aM2" firstAttribute="top" secondItem="rIv-HV-n2v" secondAttribute="bottom" constant="8" id="VwW-r8-mKp"/>
+                    <constraint firstAttribute="bottom" secondItem="QCA-3A-USv" secondAttribute="bottom" constant="20" id="bRL-y9-lEH"/>
+                    <constraint firstAttribute="bottom" secondItem="wPX-OZ-Cwo" secondAttribute="bottom" constant="17" id="cmW-nf-SKX"/>
+                    <constraint firstItem="rIv-HV-n2v" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="hbI-oO-1kS"/>
+                    <constraint firstItem="cIm-MZ-aM2" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="nd9-oy-8Rt"/>
+                    <constraint firstItem="EQO-lW-LMP" firstAttribute="top" secondItem="nTc-Mc-QXX" secondAttribute="bottom" constant="20" id="nkM-4Z-Ncn"/>
+                    <constraint firstAttribute="trailing" secondItem="rIv-HV-n2v" secondAttribute="trailing" constant="20" id="paF-BG-Vjq"/>
+                    <constraint firstItem="EQO-lW-LMP" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="vAJ-Ty-jof"/>
+                    <constraint firstItem="rIv-HV-n2v" firstAttribute="top" secondItem="EQO-lW-LMP" secondAttribute="bottom" constant="8" id="x6R-50-4HT"/>
+                    <constraint firstItem="nTc-Mc-QXX" firstAttribute="leading" secondItem="fnP-pT-Gu2" secondAttribute="trailing" constant="10" id="ymb-Cp-EPE"/>
+                </constraints>
+            </view>
+            <point key="canvasLocation" x="245" y="533.5"/>
+        </window>
+        <arrayController objectClassName="QCComposition" editable="NO" id="j6l-b4-lwV"/>
+        <viewController id="rT4-Cj-ElH" customClass="TTImageEffectsViewController">
+            <connections>
+                <outlet property="compositionsArrayController" destination="j6l-b4-lwV" id="agL-pH-CFd"/>
+                <outlet property="parameterView" destination="cIm-MZ-aM2" id="JZV-ha-DTw"/>
+                <outlet property="qcView" destination="EQO-lW-LMP" id="hNc-k5-6yc"/>
+                <outlet property="view" destination="EiT-Mj-1SZ" id="Wmy-mk-fyc"/>
+            </connections>
+        </viewController>
+    </objects>
+</document>

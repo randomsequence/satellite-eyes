@@ -9,6 +9,11 @@
 #import "TTPreferencesViewController.h"
 #import "LLManager.h"
 
+@interface TTPreferencesViewController ()
+@property (strong) TTManageMapStylesWindowController *manageMapStylesWindowController;
+@property (strong) NSWindowController *effectsWindowController;
+@end
+
 @implementation TTPreferencesViewController
 
 @synthesize startAtLogin;
@@ -33,6 +38,13 @@
     [manageMapStylesWindowController showWindow:self];
     [manageMapStylesWindowController.window makeKeyAndOrderFront:self];
     [manageMapStylesWindowController.window makeFirstResponder:nil];
+}
+
+- (IBAction)showImageEffects:(id)sender {
+    if (nil == self.effectsWindowController) {
+        self.effectsWindowController = [[NSWindowController alloc] initWithWindowNibName:@"TTImageEffectsWindow"];
+    }
+    [self.effectsWindowController showWindow:nil];
 }
 
 @end

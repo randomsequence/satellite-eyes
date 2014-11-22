@@ -11,6 +11,7 @@
 #import "MD5Digest.h"
 #import "NSFileManager+StandardPaths.h"
 #import <QuartzCore/QuartzCore.h>
+#import <Quartz/Quartz.h>
 
 #define BASE_TILE_SIZE 256
 
@@ -161,51 +162,32 @@
         }];
     }];
     
-    CGColorSpaceRelease(colorSpace);
-    
     CGImageRef imageRef = CGBitmapContextCreateImage(context);
     
-    CIContext *coreImageContext = [CIContext contextWithCGContext:context options:nil];
+    if (nil == imageEffect) {
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    } else {
+        CIImage *coreImageInput = [CIImage imageWithCGImage:imageRef];
+        
+        CGColorSpaceRelease(colorSpace);
+        
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"Blueprint" ofType:@"qtz" inDirectory:@"Compositions"];
+        
+        CGColorSpaceRef colorSpaceQC = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+        QCComposition *composition = [QCComposition compositionWithFile:path];
+        QCRenderer *renderer = [[QCRenderer alloc] initOffScreenWithSize:coreImageInput.extent.size colorSpace:colorSpaceQC composition:composition];
+        [renderer setValue:coreImageInput forInputKey:QCCompositionInputImageKey];
+        [renderer setValue:[CIColor colorWithRed:0.1 green:0.1 blue:0.2 alpha:1.0] forInputKey:@"inputColor0"];
+        [renderer setValue:[CIColor colorWithRed:0.25 green:0.5 blue:0.0 alpha:1.0] forInputKey:@"inputColor1"];
+        [renderer setValue:@(2.0) forInputKey:@"inputRadius"];
+        [renderer setValue:@(0.5) forInputKey:@"inputIntensity"];
+        [renderer renderAtTime:0 arguments:nil];
+        CGImageRef qcOutputRef = (CGImageRef)CFBridgingRetain([renderer valueForOutputKey:QCCompositionOutputImageKey ofType:@"CGImage"]);
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), qcOutputRef);
+        CGColorSpaceRelease(colorSpaceQC);
+    }
     
-    CIImage *coreImageInput = [CIImage imageWithCGImage:imageRef];
     CGImageRelease(imageRef);
-    
-    __block CIImage *coreImageOutput = coreImageInput;
-    
-    // use an affine clamp so "gloom" and "gaussian blur" type filters work
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    CIFilter *clampFilter = [CIFilter filterWithName:@"CIAffineClamp"];
-    [clampFilter setDefaults];
-    [clampFilter setValue:coreImageInput forKey:@"inputImage"];
-    [clampFilter setValue:[NSValue valueWithBytes:&transform
-                                         objCType:@encode(CGAffineTransform)]
-                   forKey:@"inputTransform"];
-    
-    coreImageOutput = [clampFilter valueForKey:@"outputImage"];
-
-    // iterate through filters, applying each...
-    NSArray *filters = [imageEffect valueForKey:@"filters"];
-    [filters enumerateObjectsUsingBlock:^(NSDictionary *filter, NSUInteger filterIndex, BOOL *stop) {
-        CIFilter *imageFilter = [CIFilter filterWithName:[filter valueForKey:@"name"]];
-        [imageFilter setDefaults];
-        [imageFilter setValue:coreImageOutput forKey:@"inputImage"];
-        
-        NSArray *parameters = [filter valueForKey:@"parameters"];
-        [parameters enumerateObjectsUsingBlock:^(NSDictionary *parameter, NSUInteger filterIndex, BOOL *stop) {
-            id value = parameter[@"value"];
-            id name = parameter[@"name"];
-            value = [self scaledFilterValue:value key:name];
-
-            [imageFilter setValue:value
-                           forKey:[parameter valueForKey:@"name"]];
-        }];
-        
-        coreImageOutput = [imageFilter valueForKey:@"outputImage"];
-    }];
-    
-    CGImageRef tiledImageRef = [coreImageContext createCGImage:coreImageOutput fromRect:coreImageInput.extent];
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), tiledImageRef);
-    CGImageRelease(tiledImageRef);
     
     if (logoImage) {
         CGImageSourceRef logoImageSourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)[logoImage TIFFRepresentation], NULL);
