@@ -7,9 +7,12 @@
 
 #import "TTMapImage.h"
 #import "TTMapTile.h"
+#import "TTImageEffect.h"
+
 #import "AFHTTPRequestOperation.h"
 #import "MD5Digest.h"
 #import "NSFileManager+StandardPaths.h"
+
 #import <QuartzCore/QuartzCore.h>
 #import <Quartz/Quartz.h>
 
@@ -33,7 +36,7 @@
              tileScale:(float)_tileScale
              zoomLevel:(unsigned short)_zoomLevel
                 source:(NSString *)_source
-                effect:(NSDictionary *)_effect
+                effect:(TTImageEffect *)_effect
                   logo:(NSImage *)_logoImage
 {
     self = [super init];
@@ -171,16 +174,13 @@
         
         CGColorSpaceRelease(colorSpace);
         
-        NSString *path = [[NSBundle mainBundle] pathForResource:@"Blueprint" ofType:@"qtz" inDirectory:@"Compositions"];
-        
         CGColorSpaceRef colorSpaceQC = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-        QCComposition *composition = [QCComposition compositionWithFile:path];
+        QCComposition *composition = imageEffect.composition;
         QCRenderer *renderer = [[QCRenderer alloc] initOffScreenWithSize:coreImageInput.extent.size colorSpace:colorSpaceQC composition:composition];
         [renderer setValue:coreImageInput forInputKey:QCCompositionInputImageKey];
-        [renderer setValue:[CIColor colorWithRed:0.1 green:0.1 blue:0.2 alpha:1.0] forInputKey:@"inputColor0"];
-        [renderer setValue:[CIColor colorWithRed:0.25 green:0.5 blue:0.0 alpha:1.0] forInputKey:@"inputColor1"];
-        [renderer setValue:@(2.0) forInputKey:@"inputRadius"];
-        [renderer setValue:@(0.5) forInputKey:@"inputIntensity"];
+        [imageEffect.inputValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            [renderer setValue:obj forInputKey:key];
+        }];
         [renderer renderAtTime:0 arguments:nil];
         CGImageRef qcOutputRef = (CGImageRef)CFBridgingRetain([renderer valueForOutputKey:QCCompositionOutputImageKey ofType:@"CGImage"]);
         CGContextDrawImage(context, CGRectMake(0, 0, width, height), qcOutputRef);
@@ -223,14 +223,15 @@
 
 // Returns a hash that keys the map details
 - (NSString *)uniqueHash {
-    NSString *key = [NSString stringWithFormat:@"%@_%.1f_%.1f_%.2f_%.2f_%.2f_%@_%u",
+    NSString *key = [NSString stringWithFormat:@"%@_%.1f_%.1f_%.2f_%.2f_%.2f_%@_%@_%u",
                      source,
                      tileRect.origin.x,
                      tileRect.origin.y,
                      tileRect.size.width,
                      tileRect.size.height,
                      tileScale,
-                     imageEffect,
+                     imageEffect.identifier,
+                     imageEffect.inputValues,
                      zoomLevel];
     return [key md5Digest];
 }

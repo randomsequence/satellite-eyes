@@ -13,4 +13,6 @@
 @property (nonatomic, weak) IBOutlet NSArrayController *compositionsArrayController;
 @property (nonatomic, weak) IBOutlet QCView *qcView;
 @property (nonatomic, weak) IBOutlet QCCompositionParameterView *parameterView;
+@property (nonatomic) NSUInteger selectedEffectIndex;
+- (IBAction)doneAction:(id)sender;
 @end

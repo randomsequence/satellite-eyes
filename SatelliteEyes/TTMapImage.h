@@ -9,12 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+@class TTImageEffect;
+
 @interface TTMapImage : NSObject {
     CGRect tileRect;
     float tileScale;
     unsigned short zoomLevel;
     NSString *source;
-    NSDictionary *imageEffect;
+    TTImageEffect *imageEffect;
     NSArray *tiles;
     CGPoint pixelShift;
     NSOperationQueue *tileQueue;
@@ -26,7 +28,7 @@
              tileScale:(float)_tileScale
              zoomLevel:(unsigned short)_zoomLevel
                 source:(NSString *)_provider
-                effect:(NSDictionary *)_effect
+                effect:(TTImageEffect *)_effect
                   logo:(NSImage *)_logoImage;
 
 - (void)fetchTilesWithSuccess:(void (^)(NSURL *filePath))success

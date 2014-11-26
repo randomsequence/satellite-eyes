@@ -12,10 +12,11 @@
 #import "TTMapImage.h"
 #import "TTMapManager.h"
 #import "TTAppDelegate.h"
+#import "TTImageEffect.h"
 
 @interface TTImageEffectsViewController ()
 @property (nonatomic, strong) QCRenderer *renderer;
-@property (nonatomic, strong) QCComposition *composition;
+@property (nonatomic, strong) TTImageEffect *imageEffect;
 @property (nonatomic, weak) TTMapManager *mapManager;
 @end
 
@@ -23,43 +24,30 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    NSArray *compositionPaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"qtz" inDirectory:@"Compositions"];
-    NSMutableArray *compositions = [NSMutableArray new];
-    [compositionPaths enumerateObjectsUsingBlock:^(NSString *path, NSUInteger idx, BOOL *stop) {
-        QCComposition *composition = [QCComposition compositionWithFile:path];
-        if (nil != composition) [compositions addObject:composition];
-    }];
     
-    NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"attributes.name" ascending:YES];
+    TTAppDelegate *appDelegate = (TTAppDelegate *)[NSApp delegate];
+    self.mapManager = appDelegate.mapManager;
+    NSArray *compositions = self.mapManager.imageEffects;
+    
+    NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     self.compositionsArrayController.sortDescriptors = @[sort];
     [self.compositionsArrayController setContent:compositions];
     
 	[self.qcView loadCompositionFromFile:[[NSBundle mainBundle] pathForResource:@"ImageEffectsPreview" ofType:@"qtz"]];
-    self.composition = [compositions firstObject];
+    self.imageEffect = self.mapManager.imageEffect;
 }
 
-- (void)setComposition:(QCComposition *)composition {
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-    self.renderer = [[QCRenderer alloc] initWithComposition:composition colorSpace:colorSpace];
-    [self.renderer setValue:nil forInputKey:QCCompositionInputImageKey];
+- (void)viewDidAppear {
+    [super viewDidAppear];
     
-    TTAppDelegate *appDelegate = (TTAppDelegate *)[NSApp delegate];
-    self.mapManager = appDelegate.mapManager;
-
-    if (nil != self.mapManager.lastSeenLocation) {
-        [self updateComposition];
-    }
-    
-    self.parameterView.compositionRenderer = self.renderer;
-    CGColorSpaceRelease(colorSpace);
+    [self compositionParameterView:nil didChangeParameterWithKey:nil];
 }
 
 - (void)updateComposition {
     if (nil != self.mapManager.lastSeenLocation) {
         CLLocationCoordinate2D coordinate = self.mapManager.lastSeenLocation.coordinate;
         TTMapImage *mapImage = [self.mapManager mapImageForCoordinate:coordinate
-                                                          screen:[NSScreen mainScreen]
+                                                               screen:[NSScreen mainScreen]
                                                           imageEffect:nil];
         [mapImage fetchTilesWithSuccess:^(NSURL *filePath) {
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -75,28 +63,56 @@
     }
 }
 
-- (QCComposition *)composition {
-    return self.renderer.composition;
+- (void)setSelectedEffectIndex:(NSUInteger)selectedEffectIndex {
+    _selectedEffectIndex = selectedEffectIndex;
+    
+    TTImageEffect *imageEffect = self.compositionsArrayController.arrangedObjects[selectedEffectIndex];
+    if (self.imageEffect != imageEffect) {
+        self.imageEffect = imageEffect;
+    }
 }
 
-- (void)viewDidAppear {
-    [super viewDidAppear];
+- (void)setImageEffect:(TTImageEffect *)imageEffect {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+    self.renderer = [[QCRenderer alloc] initWithComposition:imageEffect.composition colorSpace:colorSpace];
+    [self.renderer setValue:nil forInputKey:QCCompositionInputImageKey];
     
-    [self compositionParameterView:nil didChangeParameterWithKey:nil];
+    [imageEffect.inputValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [self.renderer setValue:obj forInputKey:key];
+    }];
+    
+    if (nil != self.mapManager.lastSeenLocation) {
+        [self updateComposition];
+    }
+    
+    self.parameterView.compositionRenderer = self.renderer;
+    CGColorSpaceRelease(colorSpace);
+}
+
+- (TTImageEffect *)imageEffect {
+    NSMutableDictionary *inputValues = [NSMutableDictionary new];
+    NSArray *excludedInputKeys = self.excludedInputKeys;
+    [self.renderer.composition.inputKeys enumerateObjectsUsingBlock:^(NSString *inputKey, NSUInteger idx, BOOL *stop) {
+        if (! [excludedInputKeys containsObject:inputKey]) {
+            id value = [self.renderer valueForInputKey:inputKey];
+            if (nil != value) {
+                inputValues[inputKey] = value;
+            }
+        }
+    }];
+    
+    return [TTImageEffect imageEffectWithComposition:self.renderer.composition inputValues:inputValues];
+}
+
+- (NSArray *)excludedInputKeys {
+    return @[QCCompositionInputImageKey, QCCompositionInputPreviewModeKey, QCCompositionInputXKey, QCCompositionInputYKey];
 }
 
 #pragma mark - QCCompositionParameterView Delegate
 
 - (BOOL) compositionParameterView:(QCCompositionParameterView*)parameterView shouldDisplayParameterWithKey:(NSString*)portKey attributes:(NSDictionary*)portAttributes
 {
-    BOOL display = YES;
-    if ([portKey isEqualToString:QCCompositionInputImageKey]
-        || [portKey isEqualToString:QCCompositionInputPreviewModeKey]
-        || [portKey isEqualToString:QCCompositionInputXKey]
-        || [portKey isEqualToString:QCCompositionInputYKey]) {
-        display = NO;
-    }
-    return display;
+    return ! [self.excludedInputKeys containsObject:portKey];
 }
 
 - (void) compositionParameterView:(QCCompositionParameterView*)parameterView didChangeParameterWithKey:(NSString*)portKey
@@ -109,4 +125,7 @@
     [self.qcView setValue:[_renderer valueForOutputKey:QCCompositionOutputImageKey ofType:@"QCImage"] forInputKey:@"inImage"];
 }
 
+- (IBAction)doneAction:(id)sender {
+    self.mapManager.imageEffect = self.imageEffect;
+}
 @end

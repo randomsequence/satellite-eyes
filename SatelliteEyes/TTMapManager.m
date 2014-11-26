@@ -9,10 +9,16 @@
 #import "TTMapManager.h"
 #import "TTMapImage.h"
 #import "TTMapTile.h"
+#import "TTImageEffect.h"
+
 #import "NSFileManager+StandardPaths.h"
 #import "Reachability.h"
 
-@interface TTMapManager ()
+#import <Quartz/Quartz.h>
+
+@interface TTMapManager () {
+    NSArray *_imageEffects;
+}
 - (CGRect)tileRectForScreen:(NSScreen *)screen 
                  coordinate:(CLLocationCoordinate2D)coordinate 
                   zoomLevel:(unsigned short)zoomLevel;
@@ -135,7 +141,7 @@
 
 - (TTMapImage *)mapImageForCoordinate:(CLLocationCoordinate2D)coordinate
                                screen:(NSScreen *)screen
-                          imageEffect:(NSDictionary *)imageEffect
+                          imageEffect:(TTImageEffect *)imageEffect
 {
     CGRect tileRect = [self tileRectForScreen:screen
                                    coordinate:coordinate
@@ -161,7 +167,7 @@
             
             [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerStartedLoad object:nil];
             
-            TTMapImage *mapImage = [self mapImageForCoordinate:coordinate screen:screen imageEffect:[self selectedImageEffect]];
+            TTMapImage *mapImage = [self mapImageForCoordinate:coordinate screen:screen imageEffect:self.imageEffect];
             
             [mapImage fetchTilesWithSuccess:^(NSURL *filePath) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:TTMapManagerFinishedLoad object:nil];
@@ -249,24 +255,54 @@
     return CGRectMake(targetScreenTileOriginX, targetScreenTileOriginY, targetScreenTileWidth, targetScreenTileHeight);
 }
 
-- (NSDictionary *)selectedImageEffect {
-    NSArray *imageEffects = [[NSUserDefaults standardUserDefaults] objectForKey:@"imageEffectTypes"];
-    NSString *selectedImageEffectId = [[NSUserDefaults standardUserDefaults] objectForKey:@"selectedImageEffectId"];
+- (NSArray *)imageEffects {
+    if (nil == _imageEffects) {
+        NSDictionary *effectInputValues = [[NSUserDefaults standardUserDefaults] objectForKey:@"effectInputValues"];
+        NSArray *compositionPaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"qtz" inDirectory:@"Compositions"];
+        NSMutableArray *imageEffects = [NSMutableArray new];
+        [compositionPaths enumerateObjectsUsingBlock:^(NSString *path, NSUInteger idx, BOOL *stop) {
+            QCComposition *composition = [QCComposition compositionWithFile:path];
+            if (nil != composition) {
+                TTImageEffect *effect = [TTImageEffect imageEffectWithComposition:composition inputValues:nil];
+                effect.inputValues = [TTImageEffect decodeInputValues:[effectInputValues objectForKey:effect.identifier]];
+                [imageEffects addObject:effect];
+            }
+        }];
+        _imageEffects = [imageEffects copy];
+    }
+    return _imageEffects;
+}
 
-    // Default to the first image effect
-    __block NSDictionary *selectedImageEffect = imageEffects[0];
+- (TTImageEffect *)imageEffect {
+    __block TTImageEffect *imageEffect = nil;
     
-    // Now try and find a matching image effect type id, and set that to be the selected one
-    [imageEffects enumerateObjectsUsingBlock:^(NSDictionary *imageEffect, NSUInteger idx, BOOL *stop) {
-        NSString *imageEffectId = imageEffect[@"id"];
-        
-        if ([imageEffectId isEqualToString:selectedImageEffectId]) {
-            selectedImageEffect = imageEffect;
+    NSString *selectedImageEffectId = [[NSUserDefaults standardUserDefaults] objectForKey:@"selectedImageEffectId"];
+    [self.imageEffects enumerateObjectsUsingBlock:^(TTImageEffect *effect, NSUInteger idx, BOOL *stop) {
+        if ([effect.identifier isEqualToString:selectedImageEffectId]) {
+            imageEffect = effect;
             *stop = YES;
         }
     }];
     
-    return selectedImageEffect;
+    return imageEffect;
+}
+
+- (void)setImageEffect:(TTImageEffect *)imageEffect {
+    NSString *identifier = imageEffect.identifier;
+
+    _imageEffects = nil;    
+    
+    NSMutableDictionary *effectInputValues = [[[NSUserDefaults standardUserDefaults] objectForKey:@"effectInputValues"] mutableCopy];
+    if (nil == effectInputValues) effectInputValues = [NSMutableDictionary new];
+    
+    if (nil == identifier) {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"selectedImageEffectId"];
+    } else {
+        [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:@"selectedImageEffectId"];
+        [effectInputValues setObject:[imageEffect encodedInputValues] forKey:identifier];
+    }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:effectInputValues forKey:@"effectInputValues"];
 }
 
 - (BOOL)screenIsRetina:(NSScreen *)screen {

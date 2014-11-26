@@ -11,6 +11,8 @@
 
 @class Reachability;
 @class TTMapImage;
+@class QCComposition;
+@class TTImageEffect;
 
 static NSString *const TTMapManagerStartedLoad = @"TTMapManagerStartedLoad";
 static NSString *const TTMapManagerFailedLoad = @"TTMapManagerFailedLoad";
@@ -25,6 +27,8 @@ static NSString *const TTMapManagerLocationPermissionDenied = @"TTMapManagerLoca
     Reachability *reachability;
 }
 @property (nonatomic, strong, readonly) CLLocation *lastSeenLocation;
+@property (nonatomic, strong, readonly) NSArray *imageEffects;
+@property (nonatomic, strong) TTImageEffect *imageEffect;
 
 - (void)start;
 - (void)updateMapToCoordinate:(CLLocationCoordinate2D)coordinate force:(BOOL)force;
@@ -34,5 +38,5 @@ static NSString *const TTMapManagerLocationPermissionDenied = @"TTMapManagerLoca
 - (NSURL *)browserURL;
 - (TTMapImage *)mapImageForCoordinate:(CLLocationCoordinate2D)coordinate
                                screen:(NSScreen *)screen
-                          imageEffect:(NSDictionary *)imageEffect;
+                          imageEffect:(TTImageEffect *)imageEffect;
 @end

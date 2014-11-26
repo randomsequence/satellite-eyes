@@ -25,11 +25,14 @@
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="menu"/>
                             <menu key="menu" id="COh-jV-7e6"/>
+                            <connections>
+                                <binding destination="rT4-Cj-ElH" name="selectedIndex" keyPath="selectedEffectIndex" id="5Ym-Ib-AjQ"/>
+                            </connections>
                         </popUpButtonCell>
                         <connections>
                             <binding destination="j6l-b4-lwV" name="content" keyPath="arrangedObjects" id="7yA-t3-Dum"/>
-                            <binding destination="j6l-b4-lwV" name="contentValues" keyPath="arrangedObjects.attributes.name" previousBinding="7yA-t3-Dum" id="1X0-C3-aTg"/>
-                            <binding destination="rT4-Cj-ElH" name="selectedObject" keyPath="composition" previousBinding="1X0-C3-aTg" id="ffr-MT-6Ya"/>
+                            <binding destination="j6l-b4-lwV" name="contentValues" keyPath="arrangedObjects.name" previousBinding="7yA-t3-Dum" id="Q07-us-HLN"/>
+                            <binding destination="rT4-Cj-ElH" name="selectedIndex" keyPath="selectedEffectIndex" previousBinding="Q07-us-HLN" id="wC3-I5-Kz3"/>
                         </connections>
                     </popUpButton>
                     <textField horizontalHuggingPriority="751" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fnP-pT-Gu2">
@@ -70,6 +73,9 @@
 Gw
 </string>
                         </buttonCell>
+                        <connections>
+                            <action selector="orderOut:" target="QvC-M9-y7g" id="NZJ-7U-EAm"/>
+                        </connections>
                     </button>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wPX-OZ-Cwo">
                         <rect key="frame" x="393" y="10" width="73" height="32"/>
@@ -77,6 +83,9 @@ Gw
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="doneAction:" target="rT4-Cj-ElH" id="K9P-M3-vzD"/>
+                        </connections>
                     </button>
                 </subviews>
                 <constraints>
